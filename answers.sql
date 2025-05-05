@@ -1,41 +1,27 @@
 -- Question 1: Achieving 1NF
--- Use a recursive CTE (Common Table Expression) to split comma-separated values
-WITH RECURSIVE SplitProducts AS (
-  
-  -- First step: get the first product from each row
-  SELECT 
-    OrderID,
-    CustomerName,
-    
-    -- Get the first product (before the first comma)
-    TRIM(SUBSTRING_INDEX(Products, ',', 1)) AS Product,
-    
-    -- Get the rest of the string (everything after the first product and comma)
-    SUBSTRING(Products, LENGTH(SUBSTRING_INDEX(Products, ',', 1)) + 2) AS Remaining
-  FROM ProductDetail
+CREATE TABLE Orders (
+    OrderID INT PRIMARY KEY,
+    CustomerName VARCHAR(100)
+);
 
-  UNION ALL
+INSERT INTO Orders (OrderID, CustomerName) VALUES
+(101, 'John Doe'),
+(102, 'Jane Smith'),
+(103, 'Emily Clark');
 
-  -- Recursive step: keep splitting the remaining string
-  SELECT
-    OrderID,
-    CustomerName,
-    
-    -- Get the next product from the Remaining string
-    TRIM(SUBSTRING_INDEX(Remaining, ',', 1)) AS Product,
-    
-    -- Update Remaining to remove the product we just extracted
-    SUBSTRING(Remaining, LENGTH(SUBSTRING_INDEX(Remaining, ',', 1)) + 2)
-  FROM SplitProducts
-  
-  -- Continue recursion only if there's more text to split
-  WHERE Remaining <> ''
-)
+CREATE TABLE OrderProducts (
+    OrderID INT,
+    Product VARCHAR(100),
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID)
+);
 
--- Final result: display each product in its own row
-SELECT OrderID, CustomerName, Product
-FROM SplitProducts
-ORDER BY OrderID;
+INSERT INTO OrderProducts (OrderID, Product) VALUES
+(101, 'Laptop'),
+(101, 'Mouse'),
+(102, 'Tablet'),
+(102, 'Keyboard'),
+(102, 'Mouse'),
+(103, 'Phone');
 
 
 -- Question 2
